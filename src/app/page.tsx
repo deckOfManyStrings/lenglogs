@@ -1,103 +1,155 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { Container, Title, Text, Grid, Card, Button, Badge, Group } from '@mantine/core'
+import { ProtectedLayout } from '@/components/ProtectedLayout'
+import { useAuth } from '@/components/AuthProvider'
+
+export default function Dashboard() {
+  const { userProfile } = useAuth()
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <ProtectedLayout>
+      <Container size="xl">
+        <Group justify="space-between" mb="xl">
+          <div>
+            <Title order={1}>
+              Welcome back, {userProfile?.first_name}!
+            </Title>
+            <Text c="dimmed" size="lg">
+              {userProfile?.role === 'manager' ? 'Manage your facility and staff' : 'View your daily tasks and assignments'}
+            </Text>
+          </div>
+          <Badge size="lg" color={userProfile?.role === 'manager' ? 'blue' : 'green'}>
+            {userProfile?.role === 'manager' ? 'Manager Dashboard' : 'Staff Dashboard'}
+          </Badge>
+        </Group>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+        <Grid>
+          {/* Manager Features */}
+          {userProfile?.role === 'manager' && (
+            <>
+              <Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
+                <Card shadow="sm" padding="lg" radius="md" withBorder>
+                  <Card.Section p="md">
+                    <Title order={3}>Form Management</Title>
+                    <Text size="sm" c="dimmed" mt="xs">
+                      Create and manage assessment forms for your facility
+                    </Text>
+                  </Card.Section>
+                  <Button variant="light" fullWidth mt="md">
+                    Manage Forms
+                  </Button>
+                </Card>
+              </Grid.Col>
+
+              <Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
+                <Card shadow="sm" padding="lg" radius="md" withBorder>
+                  <Card.Section p="md">
+                    <Title order={3}>Staff Management</Title>
+                    <Text size="sm" c="dimmed" mt="xs">
+                      Manage staff assignments and permissions
+                    </Text>
+                  </Card.Section>
+                  <Button variant="light" fullWidth mt="md" disabled>
+                    Manage Staff (Coming Soon)
+                  </Button>
+                </Card>
+              </Grid.Col>
+
+              <Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
+                <Card shadow="sm" padding="lg" radius="md" withBorder>
+                  <Card.Section p="md">
+                    <Title order={3}>Reports & Analytics</Title>
+                    <Text size="sm" c="dimmed" mt="xs">
+                      View form submissions and generate reports
+                    </Text>
+                  </Card.Section>
+                  <Button variant="light" fullWidth mt="md">
+                    View Reports
+                  </Button>
+                </Card>
+              </Grid.Col>
+            </>
+          )}
+
+          {/* Staff Features */}
+          {userProfile?.role === 'staff' && (
+            <>
+              <Grid.Col span={{ base: 12, md: 6 }}>
+                <Card shadow="sm" padding="lg" radius="md" withBorder>
+                  <Card.Section p="md">
+                    <Title order={3}>Daily Tasks</Title>
+                    <Text size="sm" c="dimmed" mt="xs">
+                      View your assigned forms and tasks for today
+                    </Text>
+                  </Card.Section>
+                  <Button variant="light" fullWidth mt="md" disabled>
+                    View Tasks (Coming Soon)
+                  </Button>
+                </Card>
+              </Grid.Col>
+
+              <Grid.Col span={{ base: 12, md: 6 }}>
+                <Card shadow="sm" padding="lg" radius="md" withBorder>
+                  <Card.Section p="md">
+                    <Title order={3}>Patient Care</Title>
+                    <Text size="sm" c="dimmed" mt="xs">
+                      Access patient information and care plans
+                    </Text>
+                  </Card.Section>
+                  <Button variant="light" fullWidth mt="md" disabled>
+                    Patient Care (Coming Soon)
+                  </Button>
+                </Card>
+              </Grid.Col>
+            </>
+          )}
+
+          {/* Shared Features */}
+          <Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
+            <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Card.Section p="md">
+                <Title order={3}>Profile Settings</Title>
+                <Text size="sm" c="dimmed" mt="xs">
+                  Update your personal information and preferences
+                </Text>
+              </Card.Section>
+              <Button variant="light" fullWidth mt="md" disabled>
+                Edit Profile (Coming Soon)
+              </Button>
+            </Card>
+          </Grid.Col>
+        </Grid>
+
+        {/* Quick Stats */}
+        <Title order={2} mt="xl" mb="md">Quick Overview</Title>
+        <Grid>
+          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+            <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Text ta="center" fw={500} c="dimmed">Forms Created</Text>
+              <Text ta="center" size="xl" fw={700}>0</Text>
+            </Card>
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+            <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Text ta="center" fw={500} c="dimmed">Submissions Today</Text>
+              <Text ta="center" size="xl" fw={700}>0</Text>
+            </Card>
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+            <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Text ta="center" fw={500} c="dimmed">Active Staff</Text>
+              <Text ta="center" size="xl" fw={700}>1</Text>
+            </Card>
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+            <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Text ta="center" fw={500} c="dimmed">Patients</Text>
+              <Text ta="center" size="xl" fw={700}>0</Text>
+            </Card>
+          </Grid.Col>
+        </Grid>
+      </Container>
+    </ProtectedLayout>
+  )
 }

@@ -41,9 +41,9 @@ import { notifications } from '@mantine/notifications'
 import Link from 'next/link'
 
 interface PatientDetailPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default function PatientDetailPage({ params }: PatientDetailPageProps) {
@@ -52,15 +52,25 @@ export default function PatientDetailPage({ params }: PatientDetailPageProps) {
   const [patient, setPatient] = useState<Patient | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [patientId, setPatientId] = useState<string>('')
+
+  // Resolve the params Promise
+  useEffect(() => {
+    params.then((resolvedParams) => {
+      setPatientId(resolvedParams.id)
+    })
+  }, [params])
 
   const fetchPatient = async () => {
+    if (!patientId) return
+
     try {
       setLoading(true)
       
       const { data, error } = await supabase
         .from('patients')
         .select('*')
-        .eq('id', params.id)
+        .eq('id', patientId)
         .eq('is_active', true)
         .single()
 
@@ -114,8 +124,10 @@ export default function PatientDetailPage({ params }: PatientDetailPageProps) {
   }
 
   useEffect(() => {
-    fetchPatient()
-  }, [params.id, userProfile])
+    if (patientId && userProfile) {
+      fetchPatient()
+    }
+  }, [patientId, userProfile])
 
   if (loading) {
     return (

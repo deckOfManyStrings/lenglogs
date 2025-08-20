@@ -21,9 +21,9 @@ import { notifications } from '@mantine/notifications'
 import Link from 'next/link'
 
 interface EditPatientPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default function EditPatientPage({ params }: EditPatientPageProps) {
@@ -32,41 +32,27 @@ export default function EditPatientPage({ params }: EditPatientPageProps) {
   const [patient, setPatient] = useState<Patient | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [patientId, setPatientId] = useState<string>('')
 
-  // Redirect if not manager
-  if (userProfile?.role !== 'manager') {
-    return (
-      <ProtectedLayout>
-        <Container size="sm">
-          <Title order={1} ta="center" mt="xl">
-            Access Denied
-          </Title>
-          <Text ta="center" c="dimmed" mt="md">
-            Only managers can edit patients.
-          </Text>
-          <Group justify="center" mt="xl">
-            <Button
-              variant="light"
-              leftSection={<IconArrowLeft size={16} />}
-              component={Link}
-              href="/patients"
-            >
-              Back to Patients
-            </Button>
-          </Group>
-        </Container>
-      </ProtectedLayout>
-    )
-  }
+  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
+
+  // Resolve the params Promise
+  useEffect(() => {
+    params.then((resolvedParams) => {
+      setPatientId(resolvedParams.id)
+    })
+  }, [params])
 
   const fetchPatient = async () => {
+    if (!patientId) return
+
     try {
       setLoading(true)
       
       const { data, error } = await supabase
         .from('patients')
         .select('*')
-        .eq('id', params.id)
+        .eq('id', patientId)
         .eq('is_active', true)
         .single()
 
@@ -91,8 +77,38 @@ export default function EditPatientPage({ params }: EditPatientPageProps) {
   }
 
   useEffect(() => {
-    fetchPatient()
-  }, [params.id, userProfile])
+    if (patientId && userProfile) {
+      fetchPatient()
+    }
+  }, [patientId, userProfile])
+
+  // NOW WE CAN DO CONDITIONAL RETURNS AFTER ALL HOOKS
+
+  // Check for manager role after hooks
+  if (userProfile && userProfile.role !== 'manager') {
+    return (
+      <ProtectedLayout>
+        <Container size="sm">
+          <Title order={1} ta="center" mt="xl">
+            Access Denied
+          </Title>
+          <Text ta="center" c="dimmed" mt="md">
+            Only managers can edit patients.
+          </Text>
+          <Group justify="center" mt="xl">
+            <Button
+              variant="light"
+              leftSection={<IconArrowLeft size={16} />}
+              component={Link}
+              href="/patients"
+            >
+              Back to Patients
+            </Button>
+          </Group>
+        </Container>
+      </ProtectedLayout>
+    )
+  }
 
   if (loading) {
     return (

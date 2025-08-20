@@ -48,12 +48,42 @@ export function AuthComponent() {
     },
   })
 
+  const createFacilityForManager = async (firstName: string, lastName: string, userId: string) => {
+  try {
+    console.log('🏥 Creating facility for:', firstName, lastName, 'User ID:', userId)
+    
+    // Create facility with a nice default name
+    const facilityName = `${firstName} ${lastName}'s Adult Day Care`
+    
+    const { data: facility, error: facilityError } = await supabase
+      .from('facilities')
+      .insert({
+        name: facilityName,
+        created_by: userId
+      })
+      .select()
+      .single()
+
+    console.log('🔍 Facility creation result:', { facility, facilityError })
+
+    if (facilityError) {
+      console.error('❌ Facility creation error details:', facilityError)
+      throw facilityError
+    }
+
+    console.log('✅ Created facility:', facility.name, 'ID:', facility.id)
+    return facility
+  } catch (error: any) {
+    console.error('❌ Error creating facility:', error)
+    throw error
+  }
+}
   const handleSubmit = async (values: AuthFormData) => {
     setLoading(true)
 
     try {
       if (isLogin) {
-        // Sign in
+        // Sign in (unchanged)
         const { error } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
@@ -67,8 +97,8 @@ export function AuthComponent() {
           color: 'green',
         })
       } else {
-        // Sign up
-        const { error } = await supabase.auth.signUp({
+        // Sign up with auto-facility creation
+        const { data: authData, error: signUpError } = await supabase.auth.signUp({
           email: values.email,
           password: values.password,
           options: {
@@ -81,13 +111,37 @@ export function AuthComponent() {
           },
         })
 
-        if (error) throw error
+        if (signUpError) throw signUpError
 
-        notifications.show({
-          title: 'Success',
-          message: 'Account created successfully! Please check your email to verify your account.',
-          color: 'green',
-        })
+        // If manager, create facility after successful signup
+        if (values.role === 'manager' && authData.user) {
+          try {
+            const facility = await createFacilityForManager(
+              values.firstName!, 
+              values.lastName!, 
+              authData.user.id
+            )
+
+            notifications.show({
+              title: 'Success',
+              message: `Account and facility "${facility.name}" created successfully! Please check your email to verify your account.`,
+              color: 'green',
+            })
+          } catch (facilityError: any) {
+            // User was created but facility creation failed
+            notifications.show({
+              title: 'Partial Success',
+              message: 'Account created but there was an issue creating your facility. Contact support for assistance.',
+              color: 'yellow',
+            })
+          }
+        } else {
+          notifications.show({
+            title: 'Success',
+            message: 'Account created successfully! Please check your email to verify your account.',
+            color: 'green',
+          })
+        }
       }
     } catch (error: any) {
       notifications.show({
@@ -172,7 +226,10 @@ export function AuthComponent() {
           {!isLogin && (
             <Alert color="blue" mb="md">
               <Text size="sm">
-                After creating your account, a manager will need to assign you to a facility.
+                {form.values.role === 'manager' 
+                  ? 'A facility will be automatically created for you to manage.'
+                  : 'After creating your account, a manager will need to assign you to a facility.'
+                }
               </Text>
             </Alert>
           )}

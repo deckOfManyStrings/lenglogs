@@ -3,6 +3,7 @@
 import { Container, Title, Text, Grid, Card, Button, Badge, Group } from '@mantine/core'
 import { ProtectedLayout } from '@/components/ProtectedLayout'
 import { useAuth } from '@/components/AuthProvider'
+import Link from 'next/link'
 
 export default function Dashboard() {
   const { userProfile } = useAuth()
@@ -36,7 +37,7 @@ export default function Dashboard() {
                       Create and manage assessment forms for your facility
                     </Text>
                   </Card.Section>
-                  <Button variant="light" fullWidth mt="md">
+                  <Button variant="light" fullWidth mt="md" component={Link} href="/forms">
                     Manage Forms
                   </Button>
                 </Card>

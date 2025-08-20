@@ -81,6 +81,14 @@ export function ProtectedLayout({ children }: ProtectedLayoutProps) {
               >
                 Forms
               </Button>
+              <Button
+                variant="subtle"
+                component={Link}
+                href="/patients"
+                size="sm"
+              >
+                Patients
+              </Button>
               {userProfile?.role === 'manager' && (
                 <>
                   <Button
